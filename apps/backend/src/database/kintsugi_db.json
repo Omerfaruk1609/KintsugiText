@@ -1,0 +1,50 @@
+{
+  "rules": [
+    {
+      "id": "rule_profanity_tr_1",
+      "pattern": "(küfür|salak|aptal|gerizekalı|şerefsiz|piç|amk|aq|o\\s*ç)",
+      "category": "PROFANITY",
+      "score": 0.85,
+      "reason": "Hakaret veya argo ifade tespiti",
+      "is_active": true,
+      "created_at": "2026-07-30T20:08:14.559Z"
+    },
+    {
+      "id": "rule_spam_gambling",
+      "pattern": "(bahis|casino|bonus|bet[0-9]|kumar|deneme\\s*bonusu|yatırımsız\\s*bonus)",
+      "category": "SPAM",
+      "score": 0.95,
+      "reason": "Spam / Yasadışı bahis reklamı tespiti",
+      "is_active": true,
+      "created_at": "2026-07-30T20:08:14.560Z"
+    },
+    {
+      "id": "rule_suspicious_link",
+      "pattern": "(https?:\\/\\/[^\\s]+|t\\.me\\/[^\\s]+|wa\\.me\\/[^\\s]+)",
+      "category": "SUSPICIOUS_LINK",
+      "score": 0.75,
+      "reason": "Şüpheli harici URL veya mesajlaşma bağlantısı tespiti",
+      "is_active": true,
+      "created_at": "2026-07-30T20:08:14.560Z"
+    },
+    {
+      "id": "rule_pii_phone_tr",
+      "pattern": "(?:05\\d{9}|5\\d{9}|\\+905\\d{9})",
+      "category": "PII_LEAK",
+      "score": 0.9,
+      "reason": "Telefon numarası sızıntısı tespiti",
+      "is_active": true,
+      "created_at": "2026-07-30T20:08:14.560Z"
+    },
+    {
+      "id": "rule_hate_speech_tr",
+      "pattern": "(ırkçı|mülteci\\s*düşmanı|nefret\\s*söylemi|defolun\\s*gidin)",
+      "category": "HATE_SPEECH",
+      "score": 0.8,
+      "reason": "Topluluk kurallarına aykırı nefret söylemi tespiti",
+      "is_active": true,
+      "created_at": "2026-07-30T20:08:14.560Z"
+    }
+  ],
+  "analysis_logs": []
+}
