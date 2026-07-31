@@ -8,6 +8,9 @@ import { FeedbackController } from './modules/moderation/feedback.controller.js'
 import { PIISanitizer } from './shared/middlewares/pii-sanitizer.js';
 import { DatabaseService } from './database/db.js';
 import { Logger } from './shared/logger/logger.js';
+import swaggerUi from 'swagger-ui-express';
+import { openApiSpec } from './config/swagger.spec.js';
+import { customCss } from './config/swagger.theme.js';
 
 const app = express();
 
@@ -31,67 +34,35 @@ const rulesController = new RulesController();
 const feedbackController = new FeedbackController();
 const dbService = DatabaseService.getInstance();
 
-// 1. OpenAPI / Swagger Documentation Endpoint (/api/docs)
-app.get('/api/docs', (_req, res) => {
-  res.status(200).json({
-    openapi: '3.0.0',
-    info: {
-      title: 'KintsugiText Moderation & Content Safety API',
-      version: '1.0.0',
-      description: 'Turkish-focused Two-Tier (Rule Engine + Python AI) Content Safety Engine for Gilded Platform'
-    },
-    servers: [{ url: 'http://localhost:4000' }],
-    paths: {
-      '/api/v1/moderate': {
-        post: {
-          summary: 'Analyze and moderate Turkish text',
-          requestBody: {
-            required: true,
-            content: {
-              'application/json': {
-                schema: {
-                  type: 'object',
-                  properties: {
-                    text: { type: 'string', example: 's4l4m apt*l seni bulacağım.' },
-                    entity_type: { type: 'string', example: 'comment' },
-                    tenant_id: { type: 'string', example: 'gilded_prod' },
-                    force_ai: { type: 'boolean', example: false }
-                  }
-                }
-              }
-            }
-          },
-          responses: {
-            200: {
-              description: 'Successful moderation response',
-              content: {
-                'application/json': {
-                  schema: {
-                    type: 'object',
-                    properties: {
-                      score: { type: 'integer', example: 82 },
-                      risk: { type: 'string', example: 'High' },
-                      allowed: { type: 'boolean', example: false },
-                      categories: { type: 'array', items: { type: 'string' }, example: ['toxicity', 'threat'] },
-                      processed_text: { type: 'string', example: 'salam ***** seni bulacağım.' },
-                      ai_summary: { type: 'string', example: 'Potential threatening language detected.' },
-                      recommendation: { type: 'string', example: 'Review before publishing' }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      },
-      '/api/v1/health': { get: { summary: 'Check API Liveness/Readiness status' } },
-      '/api/v1/rules': { get: { summary: 'List active moderation rules' }, post: { summary: 'Add a new moderation rule' } },
-      '/api/v1/rules/export': { get: { summary: 'Export active moderation rules as JSON schema' } },
-      '/api/v1/rules/import': { post: { summary: 'Batch import rules with JSON Schema validation and strategy control (merge/overwrite)' } },
-      '/api/v1/moderation/queue': { get: { summary: 'Get HITL Human Review Queue' } }
+// 1. OpenAPI / Swagger Documentation UI (/api/docs & /api/docs/json)
+if (env.ENABLE_SWAGGER) {
+  app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(openApiSpec, {
+    customCss,
+    customSiteTitle: '🏮 KintsugiText Enterprise API Docs',
+    swaggerOptions: {
+      docExpansion: 'list',
+      defaultModelsExpandDepth: 3,
+      displayRequestDuration: true,
+      tryItOutEnabled: true,
+      filter: true
     }
+  }));
+
+  app.get('/api/docs/json', (_req, res) => {
+    res.setHeader('Content-Type', 'application/json');
+    res.json(openApiSpec);
   });
-});
+} else {
+  app.use('/api/docs', (_req, res) => {
+    res.status(404).json({
+      success: false,
+      error: {
+        code: 'SWAGGER_DISABLED',
+        message: 'API dokümantasyon ekranı ortam değişkenleri ile devredışı bırakılmıştır.'
+      }
+    });
+  });
+}
 
 // 2. Healthcheck & Liveness Endpoint
 app.get('/api/v1/health', (_req, res) => {
