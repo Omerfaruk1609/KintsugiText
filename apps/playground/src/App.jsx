@@ -44,6 +44,13 @@ export default function App() {
   const [newReason, setNewReason] = useState('');
   const [ruleMsg, setRuleMsg] = useState(null);
 
+  // Import / Export State
+  const [showImportModal, setShowImportModal] = useState(false);
+  const [importText, setImportText] = useState('');
+  const [importStrategy, setImportStrategy] = useState('merge');
+  const [importLoading, setImportLoading] = useState(false);
+  const [importMsg, setImportMsg] = useState(null);
+
   const fetchHealthAndRules = async () => {
     try {
       const hRes = await fetch('/api/v1/health');
@@ -132,6 +139,77 @@ export default function App() {
       if (res.ok) fetchHealthAndRules();
     } catch (e) {
       console.error('Kural silme hatası:', e);
+    }
+  };
+
+  const handleExportRules = async () => {
+    try {
+      const res = await fetch('/api/v1/rules/export?download=true');
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'kintsugi-rules-export.json';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    } catch (e) {
+      console.error('Export failed:', e);
+      alert('Kural dışa aktarma başarısız oldu.');
+    }
+  };
+
+  const handleImportFileChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      setImportText(event.target?.result || '');
+    };
+    reader.readAsText(file);
+  };
+
+  const handleImportSubmit = async (e) => {
+    e.preventDefault();
+    if (!importText.trim()) return;
+    setImportLoading(true);
+    setImportMsg(null);
+
+    try {
+      let parsedPayload;
+      try {
+        parsedPayload = JSON.parse(importText);
+      } catch (err) {
+        throw new Error('Geçersiz JSON formatı. Lütfen JSON verisini kontrol edin.');
+      }
+
+      const res = await fetch(`/api/v1/rules/import?strategy=${importStrategy}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(parsedPayload)
+      });
+
+      const json = await res.json();
+      if (!res.ok || !json.success) {
+        const detailStr = json.error?.details ? json.error.details.join('\n') : json.error?.message;
+        throw new Error(detailStr || 'İçe aktarma hatası oluştu.');
+      }
+
+      setImportMsg({
+        type: 'success',
+        text: `✅ ${json.message || 'Kurallar başarıyla aktarıldı.'}`,
+        summary: json.data?.summary
+      });
+      fetchHealthAndRules();
+      setTimeout(() => {
+        setShowImportModal(false);
+        setImportText('');
+        setImportMsg(null);
+      }, 2000);
+    } catch (err) {
+      setImportMsg({ type: 'error', text: err.message });
+    } finally {
+      setImportLoading(false);
     }
   };
 
@@ -406,7 +484,23 @@ export default function App() {
             </div>
 
             <div className="lg:col-span-7 space-y-3">
-              <h2 className="text-base font-bold text-slate-200">📜 Aktif Moderasyon Kuralları ({rules.length})</h2>
+              <div className="flex items-center justify-between">
+                <h2 className="text-base font-bold text-slate-200">📜 Aktif Moderasyon Kuralları ({rules.length})</h2>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={handleExportRules}
+                    className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition"
+                  >
+                    📤 Kural Dışa Aktar (JSON)
+                  </button>
+                  <button
+                    onClick={() => { setShowImportModal(true); setImportMsg(null); }}
+                    className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-semibold flex items-center gap-1.5 transition"
+                  >
+                    📥 Kural İçe Aktar (JSON)
+                  </button>
+                </div>
+              </div>
               <div className="space-y-2 max-h-[500px] overflow-y-auto pr-1">
                 {rules.map((rule) => (
                   <div key={rule.id} className="p-4 bg-slate-900 border border-slate-800 rounded-xl flex items-center justify-between gap-4">
@@ -475,6 +569,81 @@ export default function App() {
         )}
 
       </div>
+
+      {/* IMPORT MODAL */}
+      {showImportModal && (
+        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl max-w-xl w-full p-6 space-y-4 shadow-2xl">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+              <h3 className="text-base font-bold text-slate-100">📥 Toplu Kural İçe Aktar (JSON Schema)</h3>
+              <button onClick={() => setShowImportModal(false)} className="text-slate-400 hover:text-slate-200 text-lg">✕</button>
+            </div>
+
+            {importMsg && (
+              <div className={`p-3.5 rounded-xl text-xs font-medium space-y-1 ${importMsg.type === 'success' ? 'bg-emerald-500/10 text-emerald-300 border border-emerald-500/20' : 'bg-rose-500/10 text-rose-300 border border-rose-500/20'}`}>
+                <p>{importMsg.text}</p>
+                {importMsg.summary && (
+                  <div className="text-[11px] font-mono text-emerald-400 pt-1">
+                    Aktarılan: {importMsg.summary.importedCount} | Atlanan: {importMsg.summary.skippedCount} | Başarısız: {importMsg.summary.failedCount}
+                  </div>
+                )}
+              </div>
+            )}
+
+            <form onSubmit={handleImportSubmit} className="space-y-4">
+              <div className="space-y-1">
+                <label className="text-xs text-slate-400">Çakışma / İçe Aktarma Stratejisi</label>
+                <select
+                  value={importStrategy}
+                  onChange={(e) => setImportStrategy(e.target.value)}
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-100"
+                >
+                  <option value="merge">Merge (Mevcut kuralları koru, çakışmayanları ekle/güncelle)</option>
+                  <option value="overwrite">Overwrite (Mevcut kuralları temizle ve yenilerini yaz)</option>
+                </select>
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-xs text-slate-400">JSON Dosyası Yükle</label>
+                <input
+                  type="file"
+                  accept=".json"
+                  onChange={handleImportFileChange}
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-slate-300 file:mr-3 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-indigo-600 file:text-white hover:file:bg-indigo-500 cursor-pointer"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-xs text-slate-400">Veya JSON İçeriğini Yapıştır</label>
+                <textarea
+                  rows={6}
+                  placeholder='{"strategy": "merge", "rules": [{"pattern": "(test)", "category": "profanity", "action": "block"}]}'
+                  value={importText}
+                  onChange={(e) => setImportText(e.target.value)}
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs font-mono text-slate-200 placeholder-slate-600 focus:outline-none"
+                />
+              </div>
+
+              <div className="flex items-center justify-end gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowImportModal(false)}
+                  className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold rounded-xl transition"
+                >
+                  İptal
+                </button>
+                <button
+                  type="submit"
+                  disabled={importLoading || !importText.trim()}
+                  className="px-5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold rounded-xl transition disabled:opacity-50"
+                >
+                  {importLoading ? 'Doğrulanıyor...' : 'İçe Aktar ve Şemayı Doğrula'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

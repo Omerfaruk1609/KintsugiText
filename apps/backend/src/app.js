@@ -86,6 +86,8 @@ app.get('/api/docs', (_req, res) => {
       },
       '/api/v1/health': { get: { summary: 'Check API Liveness/Readiness status' } },
       '/api/v1/rules': { get: { summary: 'List active moderation rules' }, post: { summary: 'Add a new moderation rule' } },
+      '/api/v1/rules/export': { get: { summary: 'Export active moderation rules as JSON schema' } },
+      '/api/v1/rules/import': { post: { summary: 'Batch import rules with JSON Schema validation and strategy control (merge/overwrite)' } },
       '/api/v1/moderation/queue': { get: { summary: 'Get HITL Human Review Queue' } }
     }
   });
@@ -110,8 +112,10 @@ app.get('/healthz', (_req, res) => {
 app.post('/api/v1/moderate', moderationController.analyze);
 app.post('/api/v1/analyze', moderationController.analyze);
 
-// 4. Rules CRUD Endpoints
+// 4. Rules CRUD & Import/Export Endpoints
 app.get('/api/v1/rules', rulesController.getRules);
+app.get('/api/v1/rules/export', rulesController.exportRules);
+app.post('/api/v1/rules/import', rulesController.importRules);
 app.post('/api/v1/rules', rulesController.addRule);
 app.delete('/api/v1/rules/:id', rulesController.deleteRule);
 
