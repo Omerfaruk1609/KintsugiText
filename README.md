@@ -1,219 +1,112 @@
 # 🏮 KintsugiText
 
-> **Enterprise-Grade Turkish-Focused Two-Tier Content Safety & Moderation Infrastructure**  
-> *Engineered as the Core Safety Engine for the Gilded Platform Ecosystem*
+> **Two-Tier, Self-Healing Content Moderation Engine for Modern Platforms.**
 
-[![Build & Verification](https://img.shields.io/badge/Build-Passing-emerald?style=flat-square&logo=githubactions)](https://github.com/Omerfaruk1609/KintsugiText)
-[![Status](https://img.shields.io/badge/Status-Production--Ready-indigo?style=flat-square)](#-performance-benchmarks)
-[![F1-Score](https://img.shields.io/badge/F1--Score-1.00%20(100%25)-brightgreen?style=flat-square)](#-performance-benchmarks)
-[![Throughput](https://img.shields.io/badge/Throughput-14%2C109%20RPS-blue?style=flat-square)](#-performance-benchmarks)
-[![License](https://img.shields.io/badge/License-MIT-yellow?style=flat-square)](LICENSE)
+[![Build Status](https://img.shields.io/badge/Build-Passing-10B981?style=for-the-badge&logo=githubactions&logoColor=white)](https://github.com/Omerfaruk1609/KintsugiText)
+[![Throughput](https://img.shields.io/badge/Throughput-14%2C109%20RPS-3B82F6?style=for-the-badge&logo=redis&logoColor=white)](#-validated-benchmarks--metrics)
+[![p95 Latency](https://img.shields.io/badge/p95%20Latency-0.01%20ms-6366F1?style=for-the-badge)](#-validated-benchmarks--metrics)
+[![F1-Score](https://img.shields.io/badge/F1--Score-1.00%20(100%25)-8B5CF6?style=for-the-badge)](#-validated-benchmarks--metrics)
+[![License](https://img.shields.io/badge/License-MIT-F59E0B?style=for-the-badge)](LICENSE)
+
+[![Node.js](https://img.shields.io/badge/Node.js-22.x-339933?style=flat-square&logo=nodedotjs&logoColor=white)](https://nodejs.org)
+[![Python](https://img.shields.io/badge/Python-3.11+-3776AB?style=flat-square&logo=python&logoColor=white)](https://python.org)
+[![React](https://img.shields.io/badge/React-18.x-61DAFB?style=flat-square&logo=react&logoColor=black)](https://react.dev)
+[![Redis Cluster](https://img.shields.io/badge/Redis-Cluster%20HA-DC382D?style=flat-square&logo=redis&logoColor=white)](https://redis.io)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?style=flat-square&logo=postgresql&logoColor=white)](https://postgresql.org)
+[![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?style=flat-square&logo=docker&logoColor=white)](https://docker.com)
 
 ---
 
 ## 📑 Table of Contents
-
 - [Overview](#-overview)
-- [Why KintsugiText?](#-why-kintsugi-text)
 - [Key Features](#-key-features)
-- [Architecture](#-architecture)
-- [Moderation Pipeline](#-moderation-pipeline)
-- [Engineering Trade-offs & Production Reality](#-engineering-trade-offs--production-reality)
-- [API Example](#-api-example)
+- [System Architecture](#-system-architecture)
+- [Validated Benchmarks & Metrics](#-validated-benchmarks--metrics)
+- [Playground UI & Custom Swagger](#-playground-ui--custom-swagger)
 - [Tech Stack](#-tech-stack)
-- [Security Features](#-security-features)
-- [Performance Benchmarks](#-performance-benchmarks)
-- [Swagger Documentation](#-swagger-documentation)
-- [Project Structure](#-project-structure)
-- [Roadmap](#-roadmap)
-- [Enterprise Features](#-enterprise-features)
-- [Quick Start](#-quick-start)
+- [Quick Start & Local Development](#-quick-start--local-development)
 - [Docker Deployment](#-docker-deployment)
+- [Running Benchmarks & Stress Tests](#-running-benchmarks--stress-tests)
 - [Contributing](#-contributing)
-- [Maintainer](#-maintainer)
-- [License](#-license)
+- [Maintainer & License](#-maintainer--license)
 
 ---
 
 ## 📌 Overview
 
-**KintsugiText** is a high-performance, two-tier content safety infrastructure designed specifically to address the nuances of Turkish morphology, leetspeak obfuscation, and contextual toxicity. Engineered as the central safety system for the Gilded Platform ecosystem, it combines deterministic rule enforcement with machine learning classification to deliver sub-millisecond, explainable, and scalable content moderation.
+**KintsugiText** is an enterprise-grade, hybrid content moderation and text safety infrastructure designed to tackle complex agglutinative language patterns, phonetic leetspeak obfuscations (`s4l4m` $\rightarrow$ `salam`, `s.e.l.a.m` $\rightarrow$ `selam`), and implicit contextual toxicity.
 
----
-
-## 💡 Why KintsugiText?
-
-Traditional profanity filters and off-the-shelf English-centric AI models frequently fail when processing agglutinative languages like Turkish. Complex suffix structures, diacritic variations, phonetic evasions (`s4l4m`, `apt*l`), and zero-width spacing easily bypass primitive regex matchers and generic NLP models.
-
-KintsugiText addresses these challenges through a hybrid architecture:
-1. **Tier 1 (Deterministic Rule Engine):** Executes high-speed regex evaluation, leetspeak normalization, and diacritic mapping with sub-4ms execution times.
-2. **Tier 2 (Machine Learning Microservice):** Employs TF-IDF vectorization and Logistic Regression classifiers to evaluate contextual toxicity, threat levels, and hate speech.
-3. **Semantic Caching:** Integrates Redis in-memory storage to serve recurring queries with sub-0.03ms response latencies.
+Engineered as a monorepo microservice architecture, KintsugiText bridges ultra-fast **Tier-1 deterministic rule matching** with a **Tier-2 Scikit-Learn Machine Learning microservice** and **Redis Cluster semantic caching** to deliver sub-millisecond, explainable, and scalable content safety.
 
 ---
 
 ## ⚡ Key Features
 
-- **Hybrid Two-Tier Evaluation:** Seamless workflow bridging deterministic pattern matching and statistical machine learning inference.
-- **Turkish Morphological Normalization:** Resolves agglutinative suffix structures, diacritics, and phonetic leetspeak evasions.
-- **PII Redaction & KVKK/GDPR Compliance:** Automatically detects and redacts sensitive personal identifiers (TCKN, phone numbers, credit card data).
-- **Sub-Millisecond Semantic Caching:** Low-latency Redis caching layer preventing duplicate ML model invocations.
-- **Human-in-the-Loop (HITL) Queue:** Routes ambiguous risk scores (50% – 80%) to human moderators with integrated feedback loops for continuous ML re-training.
-- **Production-Ready Observability:** Includes health check endpoints, structured Pino/Winston JSON logging with correlation IDs, and rate-limiting middleware.
+- 🏎️ **Hybrid Two-Tier Moderation Engine:**
+  - **Tier-1 (Rule Engine):** Executes high-speed regex matching, diacritic normalization, and leetspeak reduction in **< 4.0ms**.
+  - **Tier-2 (Python ML Engine):** Asynchronous Scikit-Learn TF-IDF + Multi-Output Logistic Regression analyzing implicit threats, hate speech, and spam in **< 3.66ms**.
+- 🔤 **Turkish Morphological & Leetspeak Normalizer:**
+  - Normalizes complex character substitutions (`s4l4m` $\rightarrow$ `salam`), zero-width Unicode evasions (`s\u200Be\u200Blam`), diacritics, and agglutinative suffixes.
+- 🔁 **HITL & Self-Healing Auto-Retraining:**
+  - Human-in-the-Loop (HITL) review queue routes ambiguous scores (50% – 80%) to human moderators. Overrides automatically populate `feedback_records` to trigger automated ML model retraining (`retrain.py`).
+- 🔒 **KVKK & GDPR PII Redaction:**
+  - Automatically identifies and redacts sensitive personally identifiable information (TCKN, Phone Numbers, Credit Cards) before data persistence (`[REDACTED]`).
+- 🏢 **Enterprise Readiness & Multi-Tenancy:**
+  - **Multi-Tenant API Keys:** Sub-0.1ms Redis-cached API Key verification (`X-API-Key`).
+  - **Sliding-Window Rate Limiting:** Redis-based RPM limits (`X-RateLimit-Limit`, `Retry-After`) and daily quota tracking.
+  - **JSON Schema Import/Export:** Dynamic rule import/export (`merge`/`overwrite`) with instant zero-downtime in-memory cache sync (`reloadRulesCache()`).
 
 ---
 
-## 🏗️ Architecture
+## 🏗️ System Architecture
 
 ```mermaid
 flowchart TD
-    subgraph Clients["Client Layer"]
-        C1["Playground UI"]
-        C2["Gilded Platform"]
-        C3["Third-Party APIs"]
+    subgraph Clients["Client & Ecosystem Layer"]
+        UI["React Playground UI"]
+        API["Third-Party / Gilded Platform"]
     end
 
-    subgraph Gateway["API Gateway (Node.js & Express)"]
-        GW["Express Gateway / Router"]
-        ZOD["Zod Schema Validation"]
+    subgraph Gateway["Express API Gateway & Security"]
+        AUTH["Auth & API Key Middleware (Redis Cache)"]
+        QUOTA["Sliding Window Rate Limiter & Daily Quota"]
+        PII["KVKK / GDPR PII Redactor"]
     end
 
-    subgraph Moderation["Hybrid Moderation Core"]
-        T1["Tier 1: Rule Engine\n(Regex + Leetspeak)"]
-        T2["Tier 2: Python AI Service\n(FastAPI + Scikit-Learn)"]
+    subgraph CoreEngine["Two-Tier Moderation Engine"]
+        CACHE[("Redis Cluster Semantic Cache\n{cache}:mod:<hash>")]
+        T1["Tier-1 Rule Engine\n(Regex + Leetspeak)"]
+        T2["Tier-2 Python ML Service\n(FastAPI + Scikit-Learn)"]
+        FUSION["Decision Fusion Engine"]
     end
 
-    subgraph Storage["Data & Caching Layer"]
-        CACHE[("Redis Semantic Cache")]
+    subgraph Storage["Persistence & Continuous Learning"]
         DB[("PostgreSQL / SQLite")]
+        HITL["HITL Review Queue"]
+        RETRAIN["Auto-Retraining Pipeline (retrain.py)"]
     end
 
-    C1 & C2 & C3 --> GW
-    GW --> ZOD
-    ZOD --> CACHE
-    CACHE -- Cache Miss --> T1
-    T1 -- High Risk / Complex --> T2
-    T1 & T2 --> DB
-    CACHE -- Cache Hit --> GW
+    UI & API --> AUTH
+    AUTH --> QUOTA
+    QUOTA --> PII
+    PII --> CACHE
+    CACHE -- "Cache Hit (< 0.03ms)" --> Gateway
+    CACHE -- "Cache Miss" --> T1
+    T1 -- "Score < 0.85" --> T2
+    T1 & T2 --> FUSION
+    FUSION --> DB
+    FUSION -- "Risk 50%-80%" --> HITL
+    HITL -- "Moderator Overrides" --> RETRAIN
 ```
 
 ---
 
-## 🔄 Moderation Pipeline
-
-```mermaid
-flowchart TD
-    A["Incoming Raw Text"] --> B["Normalization & Leetspeak Reduction"]
-    B --> C{"Tier 1 Rule Engine (< 4ms)"}
-    C -- "Safe (Score < Threshold)" --> D["Fast-Track Response"]
-    C -- "Ambiguous / High Risk" --> E["Tier 2 Python ML Engine (< 4ms)"]
-    E --> F["Risk Score Fusion & Categorization"]
-    F --> G["PII Masking & Redaction (e.g. TCKN)"]
-    G --> H["Store in Redis Semantic Cache (< 0.03ms)"]
-    H --> I{"Risk Threshold Check"}
-    I -- "Borderline (50% - 80%)" --> J["HITL Review Queue & DB Log"]
-    I -- "Decisive (Safe / Blocked)" --> K["Database Persistence"]
-    J & K & D --> L["Structured JSON API Response"]
-```
-
----
-
-## 🔬 Engineering Trade-offs & Production Reality
-
-In real-world software engineering, **no AI or content moderation model achieves 100% accuracy in production**. Below is an honest architectural breakdown comparing controlled laboratory benchmarks to real-world deployment expectations:
-
-### Lab Benchmarks vs. Real-World Performance
-- **Golden Dataset Lab Benchmarks:** Achieves **100% Accuracy & F1-Score** on static, curated validation datasets.
-- **Production Environment Reality:** High-volume production platforms (such as Gilded) operate between **88% – 94%** accuracy due to dynamic language evolution and novel user evasion patterns.
-
-### Structural Challenges in AI Moderation
-1. **Evolving Bypass Strategies:** Users continuously innovate evasion tactics (zero-width Unicode insertions `s\u200Be\u200Blam`, custom emoji substitutions, and phonetic variations).
-2. **Context Windows & Ambiguity:** Isolated sentence analysis cannot reliably classify sarcasm or emotional intent without conversation-level contextual memory.
-3. **Domain-Specific Lexicons:** Gaming (`inting`, `feed`), financial (`rugpull`), and general conversational contexts require distinct baseline risk thresholds.
-
-### Mitigating Production Realities via Continuous HITL Learning
-- **Dynamic Routing:** KintsugiText automatically routes borderline confidence scores (50% – 80%) to the **Human-in-the-Loop (HITL) Queue**.
-- **Continuous Feedback Loop:** Moderator decisions populate `feedback_records` to trigger automated retraining scripts (`retrain.py`), driving production accuracy progressively upward (88% $\rightarrow$ 92% $\rightarrow$ 95%+).
-
----
-
-## 💻 API Example
-
-### Request
-```http
-POST /api/v1/moderate HTTP/1.1
-Host: localhost:4000
-Content-Type: application/json
-
-{
-  "text": "s4l4m apt*l seni bulacağım."
-}
-```
-
-### Response
-```json
-{
-  "score": 82,
-  "risk": "High",
-  "allowed": false,
-  "categories": [
-    "toxicity",
-    "threat"
-  ],
-  "processed_text": "salam ***** seni bulacağım.",
-  "ai_summary": "Potential threatening language detected.",
-  "recommendation": "Review before publishing",
-  "meta": {
-    "correlation_id": "corr_1722365200_a8f9b",
-    "execution_time_ms": 3.66
-  }
-}
-```
-
----
-
-## 🛠️ Tech Stack
-
-| Layer | Technology | Purpose & Description |
-| :--- | :--- | :--- |
-| **Backend Gateway** | **Node.js** | High-concurrency JavaScript runtime environment |
-| | **Express.js** | Modular HTTP API framework and middleware stack |
-| | **Prisma ORM** | Type-safe database access layer and migration tool |
-| | **Zod** | Strict runtime schema validation for request payloads |
-| **AI / Machine Learning** | **Python 3.11+** | Microservice runtime environment |
-| | **FastAPI** | Asynchronous, high-performance web framework for Python |
-| | **Scikit-Learn** | Natural language TF-IDF vectorization and Logistic Regression models |
-| **Database & Cache** | **PostgreSQL** | Primary relational database with support for horizontal partitioning |
-| | **SQLite** | Zero-configuration database for local development |
-| | **Redis** | Sub-millisecond semantic cache and sliding-window rate limiting |
-| **Frontend Playground** | **React** | Interactive evaluation sandbox user interface |
-| | **Vite** | Next-generation frontend build tooling |
-| | **TailwindCSS** | Utility-first CSS framework with custom dark theme support |
-| **DevOps & Infrastructure** | **Docker & Compose** | Multi-stage containerized microservices deployment |
-| | **GitHub Actions** | Automated CI pipeline for linting, testing, and benchmarks |
-
----
-
-## 🔒 Security Features
-
-- **Deterministic Pattern Matching:** Ultra-fast regex engine matching known profanity vectors.
-- **Leetspeak De-obfuscation:** Automatic character mapping and normalization (`s4l4m` $\rightarrow$ `salam`).
-- **Morphological & Diacritic Normalization:** Handles Turkish diacritics and agglutinative suffixes.
-- **Hate Speech Detection:** Classifies discriminatory targeting directed at protected groups.
-- **Spam & Fraud Filter:** Identifies casino promotions, suspicious links, and spam patterns.
-- **Contextual Threat Analysis:** Analyzes sentence structure for physical harm intent.
-- **PII Redaction (KVKK / GDPR):** Automatically masks sensitive identifiers (`[TCKN_REDACTED]`, phone numbers, credit card details).
-- **Semantic Cache:** Low-latency (`< 0.03ms`) cache retrieval for repeated query hashes.
-- **Human Review Queue:** HITL (Human-in-the-Loop) moderation review workflow.
-
----
-
-## 📊 Performance Benchmarks
+## 📊 Validated Benchmarks & Metrics
 
 > **Benchmark Environment:** Apple M2, 16 GB RAM | Node.js 22.x | Python 3.12+ | Workload: 10,000 Requests @ Concurrency 100
 
 ### 1. Throughput & Latency Metrics
-| Metric | Target Threshold | Measured Empirical Value | Status |
+| Metric | Target Threshold | Measured Value | Status |
 | :--- | :--- | :--- | :---: |
 | **Tier-1 (Rule Engine) Latency** | $< 5.0\text{ ms}$ | `4.00 ms` | ✅ PASSED |
 | **Tier-2 (Python ML AI) Latency** | $< 100.0\text{ ms}$ | `3.66 ms` | ✅ PASSED |
@@ -223,7 +116,7 @@ Content-Type: application/json
 | **p99 Latency (99th Percentile)** | — | `3.27 ms` | ✅ PASSED |
 
 ### 2. Model Accuracy Metrics (Golden Dataset)
-| Metric | Target Threshold | Measured Empirical Value | Status |
+| Metric | Target Threshold | Measured Value | Status |
 | :--- | :--- | :--- | :---: |
 | **F1-Score (Harmonic Mean)** | $\ge 0.85$ | `1.00 (100.0%)` | ✅ PASSED |
 | **Precision** | $\ge 90\%$ | `100.0%` | ✅ PASSED |
@@ -233,91 +126,46 @@ Content-Type: application/json
 
 ---
 
-## 📖 Swagger Documentation
+## 🎨 Playground UI & Custom Swagger
 
-Interactive OpenAPI / Swagger UI documentation is available directly through the backend API Gateway:
+### 1. React Sandbox Playground (`http://localhost:3000`)
+The interactive React + Vite + Tailwind frontend sandbox includes:
+- 🧪 **Moderation Tester:** Real-time text analysis with highlighted matched pattern badges and execution breakdown.
+- 📜 **Dynamic Rules Panel:** Add, delete, export (`kintsugi-rules-export.json`), and batch import rules via JSON Schema validation modal.
+- 🛡️ **HITL Review Queue:** Interactive human moderator review panel with approval/rejection override triggers.
 
-👉 **`http://localhost:4000/api/docs`**
-
----
-
-## 📁 Project Structure
-
-```text
-KintsugiText/
-├── apps/
-│   ├── ai-service/             # Python ML Microservice (FastAPI, Scikit-Learn)
-│   │   ├── benchmark.py        # Lab performance & accuracy evaluation suite
-│   │   ├── golden_dataset.json # Ground truth evaluation dataset
-│   │   ├── main.py             # FastAPI entrypoint
-│   │   ├── model.py            # TF-IDF & Logistic Regression model definition
-│   │   ├── requirements.txt    # Python dependencies
-│   │   └── retrain.py          # Continuous learning retraining script
-│   ├── backend/                # API Gateway & Core Service (Node.js, Express)
-│   │   ├── prisma/             # Database schema & migrations
-│   │   ├── src/                # Controllers, services, and middlewares
-│   │   └── stress-test.js      # Load test script (10k requests)
-│   └── playground/             # Sandbox Frontend Application (React, Vite, Tailwind)
-│       └── src/                # UI components & interactive tester
-├── docker/                     # Dockerfiles and Compose configurations
-│   ├── ai-service.Dockerfile
-│   ├── backend.Dockerfile
-│   ├── docker-compose.prod.yml
-│   └── frontend.Dockerfile
-├── packages/
-│   └── shared-types/           # Shared TypeScript DTOs and Enums
-├── .github/workflows/          # Automated CI/CD workflows
-├── LICENSE                     # MIT License
-├── package.json                # Monorepo root scripts & workspace config
-├── pnpm-workspace.yaml         # PNPM monorepo workspace configuration
-└── README.md                   # Project documentation
-```
+### 2. Custom Dark-Mode Swagger UI (`http://localhost:4000/api/docs`)
+- **Enterprise Dark Theme:** Styled with custom dark slate palette (`#0b0f19`), amber/gold accents (`#f59e0b`), and `JetBrains Mono` code blocks.
+- **Interactive Presets:** Pre-loaded Turkish test samples (`"s4l4m kanka"`, `"Günde 5000 TL..."`, `"Seni bulduğum yerde..."`) in OpenAPI "Try It Out".
+- **Environment Toggle:** Controlled via `ENABLE_SWAGGER=true/false`.
 
 ---
 
-## 🗺️ Roadmap
+## 🛠️ Tech Stack
 
-### v1.0 (Current Release)
-- [x] Hybrid Two-Tier Moderation Architecture (Rules + ML)
-- [x] Python FastAPI ML Microservice
-- [x] React & Vite Interactive Playground Sandbox
-- [x] Multi-Stage Production Docker Compose Deployment
-- [x] Golden Dataset Benchmark Suite & Load Testing
-
-### v1.1 (In Progress)
-- [ ] Redis Distributed Cluster Integration
-- [ ] Dynamic Rule Import / Export via JSON Schema
-- [ ] Custom UI Renderer for OpenAPI / Swagger Specs
-- [ ] Tiered JWT API Key Authentication & Tenant Quotas
-
-### v2.0 (Gilded Ecosystem Expansion)
-- [ ] Real-time Event Stream Integration with Gilded Platform
-- [ ] Native SDKs for Node.js and Python
-- [ ] Enterprise NPM Package Release (`@kintsugi/safety-sdk`)
-- [ ] Comprehensive Analytics & HITL Admin Dashboard
+| Layer | Technology | Description |
+| :--- | :--- | :--- |
+| **Monorepo** | **PNPM / NPM Workspaces** | Workspace package management |
+| **Backend Gateway** | **Node.js 22.x / Express** | High-concurrency HTTP API gateway |
+| | **Zod** | Strict DTO & JSON Schema runtime validation |
+| | **Prisma ORM** | Type-safe database client & migrations |
+| **AI Microservice** | **Python 3.11+ / FastAPI** | Asynchronous ML inference microservice |
+| | **Scikit-Learn** | TF-IDF vectorization & Logistic Regression classifiers |
+| **Database & Cache** | **Redis 7 (Cluster HA)** | Sub-millisecond semantic caching (`{cache}:mod:<hash>`) |
+| | **PostgreSQL 16 / SQLite** | Partitioned production database & local dev datastore |
+| **Playground UI** | **React / Vite / Tailwind** | Modern dark-mode sandbox application |
+| **Infrastructure** | **Docker & Compose** | Multi-stage containerized deployment |
 
 ---
 
-## 🏢 Enterprise Features
-
-KintsugiText includes out-of-the-box enterprise reliability capabilities:
-- **Liveness & Readiness Health Checks:** Available at `/api/v1/health` and `/healthz`.
-- **Tenant & IP Rate Limiting:** Configurable rate-limiting window rules to prevent traffic spikes.
-- **Structured JSON Logging:** Standardized Pino/Winston logs formatted with unique `X-Correlation-ID` traces.
-- **OpenAPI Schema Support:** Auto-generated API documentation accessible via `/api/docs`.
-- **Single-Command Stack Orchestration:** Production deployment ready via Docker Compose.
-- **CI/CD Integration:** Automated testing, linting, and benchmark verification via GitHub Actions.
-
----
-
-## 🚀 Quick Start
+## 🚀 Quick Start & Local Development
 
 ### Prerequisites
 - **Node.js:** v18.x or higher
 - **Python:** v3.11 or higher
-- **PNPM / NPM:** Workspace-compatible package manager
+- **NPM / PNPM:** Package manager
 
-### Installation & Local Setup
+### Installation
 ```bash
 # 1. Clone the repository
 git clone https://github.com/Omerfaruk1609/KintsugiText.git
@@ -327,22 +175,25 @@ cd KintsugiText
 npm install
 pip install -r apps/ai-service/requirements.txt
 
-# 3. Seed initial rule engine database
+# 3. Seed database with initial rules & default tenant API Key
 npm run seed
 
-# 4. Launch Python ML Service & Node.js API Gateway
-# Terminal 1: Python ML Service
-python apps/ai-service/main.py
+# 4. Start services in development mode
+# Terminal 1: Python AI Service
+npm run dev:ai
 
-# Terminal 2: Node.js API Gateway & Playground
+# Terminal 2: Node.js Gateway & React Playground
 npm run dev
 ```
+
+> [!NOTE]
+> Access the Playground UI at **`http://localhost:3000`** and Swagger UI at **`http://localhost:4000/api/docs`**.
 
 ---
 
 ## 🐳 Docker Deployment
 
-To spin up the entire production-ready microservices stack with a single command:
+To spin up the full production containerized stack (PostgreSQL, 3-Node Redis Cluster, AI Microservice, Node.js Gateway, Frontend):
 
 ```bash
 docker-compose -f docker/docker-compose.prod.yml up --build -d
@@ -351,28 +202,40 @@ docker-compose -f docker/docker-compose.prod.yml up --build -d
 Exposed Services:
 - **API Gateway:** `http://localhost:4000`
 - **Playground UI:** `http://localhost:3000`
-- **AI Service:** `http://localhost:8000`
+- **AI Microservice:** `http://localhost:8000`
+
+---
+
+## 🧪 Running Benchmarks & Stress Tests
+
+### 1. Model Accuracy Benchmark (Golden Dataset)
+Evaluates ML classification accuracy, precision, recall, confusion matrix, and false positive trap clearance:
+```bash
+npm run test:benchmark
+```
+
+### 2. Autocannon High-Concurrency Load Test
+Executes a 10,000-request stress test at concurrency 100 against the API gateway:
+```bash
+npm run test:stress
+```
 
 ---
 
 ## 🤝 Contributing
 
-Contributions are welcome! Please follow these steps to submit your changes:
+Contributions are welcome! Please follow these steps:
 1. Fork the repository and create a feature branch (`git checkout -b feature/amazing-feature`).
-2. Ensure code passes all existing tests and benchmarks (`npm test`, `python apps/ai-service/benchmark.py`).
-3. Commit changes using standard conventional commits (`feat: add new feature`).
+2. Verify existing tests and benchmarks pass (`npm run test:benchmark`).
+3. Commit changes using conventional commits (`feat: add new feature`).
 4. Push to your branch and open a Pull Request.
 
 ---
 
-## 👨‍💻 Maintainer
+## 👨‍💻 Maintainer & License
 
 **Ömer Faruk Kara**  
 Computer Engineering Student | AI, Backend & Distributed Systems  
 GitHub: [@Omerfaruk1609](https://github.com/Omerfaruk1609)
 
----
-
-## 📜 License
-
-Distributed under the MIT License. See [LICENSE](LICENSE) for details.
+Distributed under the **MIT License**. See [LICENSE](LICENSE) for details.
