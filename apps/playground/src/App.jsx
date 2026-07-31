@@ -51,18 +51,23 @@ export default function App() {
   const [importLoading, setImportLoading] = useState(false);
   const [importMsg, setImportMsg] = useState(null);
 
+  const DEFAULT_HEADERS = {
+    'Content-Type': 'application/json',
+    'X-API-Key': 'kt_live_dev_key'
+  };
+
   const fetchHealthAndRules = async () => {
     try {
       const hRes = await fetch('/api/v1/health');
       if (hRes.ok) setHealthInfo(await hRes.json());
 
-      const rRes = await fetch('/api/v1/rules');
+      const rRes = await fetch('/api/v1/rules', { headers: { 'X-API-Key': 'kt_live_dev_key' } });
       if (rRes.ok) {
         const rData = await rRes.json();
         if (rData.success) setRules(rData.data || []);
       }
 
-      const qRes = await fetch('/api/v1/moderation/queue');
+      const qRes = await fetch('/api/v1/moderation/queue', { headers: { 'X-API-Key': 'kt_live_dev_key' } });
       if (qRes.ok) {
         const qData = await qRes.json();
         if (qData.success) setQueue(qData.data || []);
@@ -84,7 +89,7 @@ export default function App() {
     try {
       const response = await fetch('/api/v1/moderate', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: DEFAULT_HEADERS,
         body: JSON.stringify({
           text: textToAnalyze,
           entity_type: 'comment',
@@ -114,7 +119,7 @@ export default function App() {
     try {
       const res = await fetch('/api/v1/rules', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: DEFAULT_HEADERS,
         body: JSON.stringify({ pattern: newPattern, category: newCategory, score: Number(newScore), reason: newReason })
       });
 
@@ -135,7 +140,10 @@ export default function App() {
   const handleDeleteRule = async (id) => {
     if (!window.confirm('Bu kuralı silmek istediğinize emin misiniz?')) return;
     try {
-      const res = await fetch(`/api/v1/rules/${id}`, { method: 'DELETE' });
+      const res = await fetch(`/api/v1/rules/${id}`, {
+        method: 'DELETE',
+        headers: { 'X-API-Key': 'kt_live_dev_key' }
+      });
       if (res.ok) fetchHealthAndRules();
     } catch (e) {
       console.error('Kural silme hatası:', e);
@@ -144,7 +152,9 @@ export default function App() {
 
   const handleExportRules = async () => {
     try {
-      const res = await fetch('/api/v1/rules/export?download=true');
+      const res = await fetch('/api/v1/rules/export?download=true', {
+        headers: { 'X-API-Key': 'kt_live_dev_key' }
+      });
       const blob = await res.blob();
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -185,7 +195,7 @@ export default function App() {
 
       const res = await fetch(`/api/v1/rules/import?strategy=${importStrategy}`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: DEFAULT_HEADERS,
         body: JSON.stringify(parsedPayload)
       });
 
@@ -217,7 +227,7 @@ export default function App() {
     try {
       const res = await fetch('/api/v1/moderation/override', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: DEFAULT_HEADERS,
         body: JSON.stringify({
           log_id: logId,
           moderator_verdict: verdict,

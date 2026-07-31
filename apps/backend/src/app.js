@@ -11,6 +11,8 @@ import { Logger } from './shared/logger/logger.js';
 import swaggerUi from 'swagger-ui-express';
 import { openApiSpec } from './config/swagger.spec.js';
 import { customCss } from './config/swagger.theme.js';
+import { AuthMiddleware } from './shared/middlewares/auth.middleware.js';
+import { QuotaMiddleware } from './shared/middlewares/quota.middleware.js';
 
 const app = express();
 
@@ -79,21 +81,24 @@ app.get('/healthz', (_req, res) => {
   res.redirect('/api/v1/health');
 });
 
-// 3. Moderation Endpoint
-app.post('/api/v1/moderate', moderationController.analyze);
-app.post('/api/v1/analyze', moderationController.analyze);
+// 3. Protected API Routes Middleware Stack
+const protectedAuth = [AuthMiddleware.authenticate(), QuotaMiddleware.rateLimit()];
 
-// 4. Rules CRUD & Import/Export Endpoints
-app.get('/api/v1/rules', rulesController.getRules);
-app.get('/api/v1/rules/export', rulesController.exportRules);
-app.post('/api/v1/rules/import', rulesController.importRules);
-app.post('/api/v1/rules', rulesController.addRule);
-app.delete('/api/v1/rules/:id', rulesController.deleteRule);
+// 4. Moderation Endpoints (Protected)
+app.post('/api/v1/moderate', protectedAuth, moderationController.analyze);
+app.post('/api/v1/analyze', protectedAuth, moderationController.analyze);
 
-// 5. HITL Moderatör Kuyruğu & Feedback Endpoints
-app.get('/api/v1/moderation/queue', feedbackController.getQueue);
-app.post('/api/v1/moderation/override', feedbackController.submitOverride);
-app.get('/api/v1/moderation/dataset/export', feedbackController.exportDataset);
+// 5. Rules CRUD & Import/Export Endpoints (Protected)
+app.get('/api/v1/rules', protectedAuth, rulesController.getRules);
+app.get('/api/v1/rules/export', protectedAuth, rulesController.exportRules);
+app.post('/api/v1/rules/import', protectedAuth, rulesController.importRules);
+app.post('/api/v1/rules', protectedAuth, rulesController.addRule);
+app.delete('/api/v1/rules/:id', protectedAuth, rulesController.deleteRule);
+
+// 6. HITL Moderatör Kuyruğu & Feedback Endpoints (Protected)
+app.get('/api/v1/moderation/queue', protectedAuth, feedbackController.getQueue);
+app.post('/api/v1/moderation/override', protectedAuth, feedbackController.submitOverride);
+app.get('/api/v1/moderation/dataset/export', protectedAuth, feedbackController.exportDataset);
 
 // 6. 404 Handler
 app.use((_req, res) => {
