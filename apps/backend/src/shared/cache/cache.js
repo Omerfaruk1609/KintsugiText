@@ -1,9 +1,12 @@
 import crypto from 'crypto';
+import { getRedisClient, isRedisConnected } from './redis.js';
+import { Logger } from '../logger/logger.js';
 
 export class SemanticCacheService {
   static instance;
-  cache = new Map();
-  ttlMs = 1000 * 60 * 60; // 1 Saat Önbellek Süresi
+  localCache = new Map();
+  ttlMs = 1000 * 60 * 60; // 1 Saat Önbellek Süresi (in-memory fallback)
+  ttlSeconds = 60 * 60;   // 1 Hour TTL in Redis
 
   static getInstance() {
     if (!SemanticCacheService.instance) {
@@ -16,30 +19,63 @@ export class SemanticCacheService {
     return crypto.createHash('sha256').update(text.trim().toLowerCase()).digest('hex');
   }
 
-  get(text) {
-    const key = this.hashText(text);
-    const item = this.cache.get(key);
+  getCacheKey(text) {
+    const hash = this.hashText(text);
+    // Redis Cluster Hash Tag format: {cache}:mod:<hash> ensures all semantic cache keys hash to the same slot
+    return `{cache}:mod:${hash}`;
+  }
+
+  async get(text) {
+    const key = this.getCacheKey(text);
+
+    // 1. Try Redis Cluster / Standalone Client
+    try {
+      const redis = getRedisClient();
+      if (redis && isRedisConnected()) {
+        const cachedValue = await redis.get(key);
+        if (cachedValue) {
+          return JSON.parse(cachedValue);
+        }
+        return null;
+      }
+    } catch (err) {
+      Logger.warn('Redis cache read failed, using local in-memory fallback', { error: err.message, key });
+    }
+
+    // 2. Fallback to Local In-Memory Cache
+    const item = this.localCache.get(key);
     if (!item) return null;
 
     if (Date.now() > item.expiresAt) {
-      this.cache.delete(key);
+      this.localCache.delete(key);
       return null;
     }
 
     return item.value;
   }
 
-  set(text, result) {
-    const key = this.hashText(text);
-    this.cache.set(key, {
+  async set(text, result) {
+    const key = this.getCacheKey(text);
+
+    // 1. Try Redis Cluster / Standalone Client
+    try {
+      const redis = getRedisClient();
+      if (redis && isRedisConnected()) {
+        await redis.setex(key, this.ttlSeconds, JSON.stringify(result));
+      }
+    } catch (err) {
+      Logger.warn('Redis cache write failed, using local in-memory fallback', { error: err.message, key });
+    }
+
+    // 2. Always maintain local in-memory fallback cache
+    this.localCache.set(key, {
       value: result,
       expiresAt: Date.now() + this.ttlMs
     });
 
-    // Cache sınırlandırma (Max 10,000 kayıt)
-    if (this.cache.size > 10000) {
-      const firstKey = this.cache.keys().next().value;
-      this.cache.delete(firstKey);
+    if (this.localCache.size > 10000) {
+      const firstKey = this.localCache.keys().next().value;
+      this.localCache.delete(firstKey);
     }
   }
 }

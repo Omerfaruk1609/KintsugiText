@@ -10,7 +10,9 @@ const EnvSchema = z.object({
   OPENAI_API_KEY: z.string().optional(),
   GEMINI_API_KEY: z.string().optional(),
   DATABASE_URL: z.string().default('sqlite://dev.db'),
-  REDIS_URL: z.string().optional()
+  REDIS_URL: z.string().optional(),
+  REDIS_CLUSTER_NODES: z.string().optional(),
+  REDIS_PASSWORD: z.string().optional()
 });
 
 export const env = EnvSchema.parse(process.env);

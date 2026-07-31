@@ -1,6 +1,7 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from model import TurkishModerationMLModel
+from cache import AICacheService
 
 app = FastAPI(
     title="KintsugiText Python AI Moderation Service",
@@ -8,8 +9,9 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# Python ML Modelini Yükle
+# Python ML Model & Cache Service Initializations
 ml_model = TurkishModerationMLModel()
+ai_cache = AICacheService()
 
 class AnalyzeRequest(BaseModel):
     text: str
@@ -20,13 +22,20 @@ def read_root():
     return {
         "status": "online",
         "service": "KintsugiText Python AI Microservice",
-        "model": "Scikit-Learn TF-IDF + Multi-Output Logistic Regression"
+        "model": "Scikit-Learn TF-IDF + Multi-Output Logistic Regression",
+        "redis_cluster_enabled": ai_cache.is_cluster
     }
 
 @app.post("/predict")
 def predict_text(req: AnalyzeRequest):
     if not req.text or len(req.text.strip()) == 0:
         raise HTTPException(status_code=400, detail="Metin boş olamaz")
+
+    # Check Cache
+    cached_response = ai_cache.get(req.text)
+    if cached_response:
+        cached_response["cached"] = True
+        return cached_response
 
     scores = ml_model.predict(req.text)
     
@@ -50,11 +59,17 @@ def predict_text(req: AnalyzeRequest):
             "reason": "Python ML Modeli Tespiti: Yüksek spam / reklam tespiti"
         })
 
-    return {
+    response_payload = {
         "provider": "Python ML Engine (Scikit-Learn TF-IDF)",
         "scores": scores,
-        "violations": violations
+        "violations": violations,
+        "cached": False
     }
+
+    # Store in Cache
+    ai_cache.set(req.text, response_payload)
+
+    return response_payload
 
 if __name__ == "__main__":
     import uvicorn

@@ -17,7 +17,7 @@ export class DecisionFusionEngine {
 
   async evaluate(request) {
     // 0. Cache Check (Gelişmiş Önbellek Kontrolü - < 2ms)
-    const cached = this.cacheService.get(request.text);
+    const cached = await this.cacheService.get(request.text);
     if (cached && !request.force_ai) {
       return {
         ...cached,
@@ -94,7 +94,7 @@ export class DecisionFusionEngine {
     };
 
     // Cache & DB Log Record
-    this.cacheService.set(request.text, result);
+    await this.cacheService.set(request.text, result);
     try {
       this.dbService.addLog({
         correlation_id: correlationId,
