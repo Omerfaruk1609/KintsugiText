@@ -22,10 +22,10 @@ async function runPerformanceAndStressTest() {
   }
   const cacheLatency = (performance.now() - cacheStart) / 100;
 
-  // Tier-1 Direct Cold Test (Uncached)
+  // Tier-1 Direct Cold Test (Uncached Rule Engine)
   const tier1Start = performance.now();
   for (let i = 0; i < 100; i++) {
-    await fusionEngine.evaluate({ text: `Unique text for tier1 test ${i}`, entity_type: 'comment' });
+    fusionEngine.ruleEngine.evaluate(`Unique text for tier1 test ${i}`);
   }
   const tier1Latency = (performance.now() - tier1Start) / 100;
 

@@ -4,6 +4,7 @@ import { Logger } from '../logger/logger.js';
 
 let redisClient = null;
 let isConnected = false;
+let isInitialized = false;
 
 function parseClusterNodes(nodesString) {
   if (!nodesString || typeof nodesString !== 'string') return [];
@@ -21,7 +22,8 @@ function parseClusterNodes(nodesString) {
 }
 
 export function createRedisClient() {
-  if (redisClient) return redisClient;
+  if (isInitialized) return redisClient;
+  isInitialized = true;
 
   const clusterNodes = parseClusterNodes(env.REDIS_CLUSTER_NODES);
 
@@ -80,7 +82,7 @@ export function createRedisClient() {
 }
 
 export function getRedisClient() {
-  if (!redisClient) {
+  if (!isInitialized) {
     createRedisClient();
   }
   return redisClient;
