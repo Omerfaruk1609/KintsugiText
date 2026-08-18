@@ -24,5 +24,7 @@ export const EntityTypeEnum = {
   COMMENT: 'comment',
   POST: 'post',
   CHAT_MESSAGE: 'chat_message',
-  USER_BIO: 'user_bio'
+  USER_BIO: 'user_bio',
+  WISDOM: 'wisdom',
+  STITCH: 'stitch'
 };

@@ -16,13 +16,19 @@ export class TurkishTextNormalizer {
   static normalize(rawText) {
     if (!rawText) return '';
 
-    let text = rawText.toLowerCase().trim();
+    // 0. Türkçe karakter küçültme ve combining dot temizliği
+    let text = rawText
+      .replace(/İ/g, 'i')
+      .replace(/I/g, 'ı')
+      .toLocaleLowerCase('tr-TR')
+      .replace(/\u0307/g, '')
+      .trim();
 
-    // 1. Leetspeak dönüşümü (s4l4m -> salam)
+    // 1. Leetspeak dönüşümü (s4l4m -> salam, @ -> a, $ -> s)
     text = text.replace(/[013457@$]/g, (match) => this.LEET_MAP[match] || match);
 
-    // 2. Harf aralarına konan nokta, tire, alt çizgi hilelerini kaldırma (s.e.l.a.m -> selam)
-    text = text.replace(/([a-zçğıöşü])[\.\-_ ]+([a-zçğıöşü])/gi, '$1$2');
+    // 2. Harf ve rakam aralarına konan nokta, tire, alt çizgi, boşluk hilelerini kaldırma (s.e.l.a.m -> selam)
+    text = text.replace(/([a-zçğıöşü0-9])[\.\-_ ]+(?=[a-zçğıöşü0-9])/gi, '$1');
 
     // 3. Ardışık 3+ harf tekrarlarını 2 harfe düşürme (salaaaaam -> salaam)
     text = text.replace(/(.)\1{2,}/gu, '$1$1');
