@@ -28,6 +28,16 @@ const DEFAULT_API_KEY = {
   createdAt: new Date().toISOString()
 };
 
+const GILDED_PROD_API_KEY = {
+  id: 'key_gilded_prod',
+  tenantId: 'tenant_gilded_default',
+  key: 'kt_live_gilded_space_key_2026',
+  prefix: 'kt_live_gilded',
+  name: 'Gilded Space Production Key',
+  isActive: true,
+  createdAt: new Date().toISOString()
+};
+
 export class DatabaseService {
   static instance;
   db = { rules: [], analysis_logs: [], tenants: [], api_keys: [] };
@@ -72,6 +82,11 @@ export class DatabaseService {
       this.db.api_keys.push(DEFAULT_API_KEY);
     }
 
+    let hasGildedProdKey = this.db.api_keys.some(k => k.key === GILDED_PROD_API_KEY.key);
+    if (!hasGildedProdKey) {
+      this.db.api_keys.push(GILDED_PROD_API_KEY);
+    }
+
     this.persist();
   }
 
@@ -84,12 +99,12 @@ export class DatabaseService {
       }));
       this.db.analysis_logs = [];
       this.db.tenants = [DEFAULT_TENANT];
-      this.db.api_keys = [DEFAULT_API_KEY];
+      this.db.api_keys = [DEFAULT_API_KEY, GILDED_PROD_API_KEY];
       this.persist();
       console.log(`✅ Database successfully seeded with ${this.db.rules.length} rules and default tenant!`);
     } else {
       console.warn('⚠️ seed.json file not found, creating empty database with default tenant.');
-      this.db = { rules: [], analysis_logs: [], tenants: [DEFAULT_TENANT], api_keys: [DEFAULT_API_KEY] };
+      this.db = { rules: [], analysis_logs: [], tenants: [DEFAULT_TENANT], api_keys: [DEFAULT_API_KEY, GILDED_PROD_API_KEY] };
       this.persist();
     }
   }

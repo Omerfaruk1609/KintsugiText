@@ -38,6 +38,11 @@ const dbService = DatabaseService.getInstance();
 
 // 1. OpenAPI / Swagger Documentation UI (/api/docs & /api/docs/json)
 if (env.ENABLE_SWAGGER) {
+  app.get('/api/docs/json', (_req, res) => {
+    res.setHeader('Content-Type', 'application/json');
+    res.json(openApiSpec);
+  });
+
   app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(openApiSpec, {
     customCss,
     customSiteTitle: '🏮 KintsugiText Enterprise API Docs',
@@ -49,11 +54,6 @@ if (env.ENABLE_SWAGGER) {
       filter: true
     }
   }));
-
-  app.get('/api/docs/json', (_req, res) => {
-    res.setHeader('Content-Type', 'application/json');
-    res.json(openApiSpec);
-  });
 } else {
   app.use('/api/docs', (_req, res) => {
     res.status(404).json({
