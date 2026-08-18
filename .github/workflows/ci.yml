@@ -37,7 +37,11 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r apps/ai-service/requirements.txt
 
-      - name: Test Python ML Model
-        run: |
-          python -c "from apps.ai_service.model import TurkishModerationMLModel; m = TurkishModerationMLModel(); print(m.predict('test'))"
-        continue-on-error: true
+      - name: Run Backend Unit & Integration Tests
+        run: npm run test:backend
+
+      - name: Run Python AI Service Tests
+        run: npm run test:ai
+
+      - name: Run AI Model Benchmark Suite
+        run: npm run test:benchmark
