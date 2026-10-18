@@ -21,6 +21,7 @@
 - [Overview](#-overview)
 - [Key Features](#-key-features)
 - [System Architecture](#-system-architecture)
+- [Machine Learning & Dataset Corpus](#-machine-learning--dataset-corpus)
 - [Validated Benchmarks & Metrics](#-validated-benchmarks--metrics)
 - [Playground UI & Custom Swagger](#-playground-ui--custom-swagger)
 - [Tech Stack](#-tech-stack)
@@ -44,9 +45,9 @@ Engineered as a monorepo microservice architecture, KintsugiText bridges ultra-f
 
 - 🏎️ **Hybrid Two-Tier Moderation Engine:**
   - **Tier-1 (Rule Engine):** Executes high-speed regex matching, diacritic normalization, and leetspeak reduction in **< 4.0ms**.
-  - **Tier-2 (Python ML Engine):** Asynchronous Scikit-Learn TF-IDF + Multi-Output Logistic Regression analyzing implicit threats, hate speech, and spam in **< 3.66ms**.
+  - **Tier-2 (Python ML Engine):** Pre-trained Scikit-Learn TF-IDF + Multi-Output Logistic Regression trained on a 77,800+ Turkish corpus analyzing implicit threats, hate speech, and spam in **< 3.66ms**.
 - 🔤 **Turkish Morphological & Leetspeak Normalizer:**
-  - Normalizes complex character substitutions (`s4l4m` $\rightarrow$ `salam`), zero-width Unicode evasions (`s\u200Be\u200Blam`), diacritics, and agglutinative suffixes.
+  - Normalizes complex character substitutions (`s4l4m` $\rightarrow$ `salam`), zero-width Unicode evasions (`s\u200Be\u200Blam`), diacritics, and prevents false-positive substring collisions (Scunthorpe Problem on words like `Malatya`, `Kemal`, `normal`, `eksik`).
 - 🔁 **HITL & Self-Healing Auto-Retraining:**
   - Human-in-the-Loop (HITL) review queue routes ambiguous scores (50% – 80%) to human moderators. Overrides automatically populate `feedback_records` to trigger automated ML model retraining (`retrain.py`).
 - 🔒 **KVKK & GDPR PII Redaction:**
@@ -98,6 +99,37 @@ flowchart TD
     FUSION -- "Risk 50%-80%" --> HITL
     HITL -- "Moderator Overrides" --> RETRAIN
 ```
+
+---
+
+## 🧠 Machine Learning & Dataset Corpus
+
+Tier-2 content safety relies on a high-throughput, multi-output machine learning engine trained on an extensive Turkish corpus of **79,450 sentences**:
+
+### 1. Primary Training Corpus (Hugging Face)
+- **Dataset:** [`Overfit-GM/turkish-toxic-language`](https://huggingface.co/datasets/Overfit-GM/turkish-toxic-language) (Distributed under Apache-2.0 License)
+- **Volume:** **77,800 verified Turkish samples** with balanced class distributions:
+  - 🟢 **Clean / Benign (`OTHER`):** 37,663 samples (48.4%)
+  - 🔴 **Profanity & Vulgarity (`PROFANITY`):** 18,252 samples (23.5%)
+  - 🔴 **Insult & Harassment (`INSULT`):** 10,777 samples (13.8%)
+  - 🚨 **Hate Speech & Racism (`RACIST`):** 10,163 samples (13.1%)
+  - 🚨 **Sexist Degradation (`SEXIST`):** 945 samples (1.2%)
+
+### 2. Domain-Specific Data Augmentation
+To address real-world abuse patterns and eliminate the **Scunthorpe Problem** (false positive substring collisions), the corpus is augmented with specialized datasets:
+- **Illegal Gambling & Betting Spam:** Casino bonuses, betting group invites (`t.me/*`), and financial scams.
+- **Implicit Threat & Physical Harm:** Indirect violence, stalking, intimidation, and blackmail phrases.
+- **Benign Turkish Traps (False Positive Prevention):** Linguistic expressions, geographical names, and honorifics that commonly trigger false alerts (`Malatya kayısısı`, `Mustafa Kemal Atatürk`, `bu maçı kazanmak için savaşacağız`, `normal`, `eksik evrak`, `bisiklet`, `müdüre götür`).
+
+### 3. Model Persistence & Cold-Start Latency
+The trained model weights are serialized as compressed `.joblib` artifacts located in `apps/ai-service/models/`:
+- `vectorizer.joblib` (1-3 N-Gram TF-IDF with 30,000 max features)
+- `clf_tox.joblib` (General toxicity classifier)
+- `clf_hate.joblib` (Hate speech classifier)
+- `clf_spam.joblib` (Spam & illegal betting classifier)
+- `clf_threat.joblib` (Implicit threat classifier)
+
+This design eliminates runtime training on boot and achieves instant **< 5ms** cold-start readiness with zero GPU dependencies.
 
 ---
 

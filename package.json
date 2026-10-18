@@ -10,6 +10,8 @@
     "dev:backend": "npm --workspace=@kintsugi/backend run dev",
     "dev:playground": "npm --workspace=@kintsugi/playground run dev",
     "dev:ai": "python apps/ai-service/main.py",
+    "train:ai": "python apps/ai-service/train.py",
+    "retrain:ai": "python apps/ai-service/retrain.py",
     "build:shared": "npm --workspace=@kintsugi/shared-types run build",
     "build:backend": "npm --workspace=@kintsugi/backend run build",
     "build:playground": "npm --workspace=@kintsugi/playground run build",
